@@ -1,0 +1,12 @@
+node_modules
+.next
+dist
+coverage
+.env.local
+.env
+apps/web/.next
+apps/web/node_modules
+packages/shared/node_modules
+data/*.backup.json
+.dev-server.log
+.dev-server.err.log
