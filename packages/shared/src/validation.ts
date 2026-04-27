@@ -31,4 +31,6 @@ export const settingsInputSchema = z.object({
   monthlyCloseHour: z.coerce.number().int().min(0).max(23),
   autoDraftEnabled: z.coerce.boolean().default(false),
   cronSecret: z.string().trim().min(8),
+  telegramBotToken: z.string().trim().default(""),
+  telegramChatId: z.string().trim().default(""),
 });

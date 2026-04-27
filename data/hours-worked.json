@@ -11,6 +11,8 @@
     "monthlyCloseHour": 9,
     "autoDraftEnabled": true,
     "cronSecret": "change-me-before-hosting",
+    "telegramBotToken": "",
+    "telegramChatId": "",
     "createdAt": "2026-03-23T00:00:00.000Z",
     "updatedAt": "2026-03-23T00:00:00.000Z"
   }

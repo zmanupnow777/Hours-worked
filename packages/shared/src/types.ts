@@ -77,6 +77,8 @@ export interface AppSettings {
   monthlyCloseHour: number;
   autoDraftEnabled: boolean;
   cronSecret: string;
+  telegramBotToken: string;
+  telegramChatId: string;
   createdAt: string;
   updatedAt: string;
 }

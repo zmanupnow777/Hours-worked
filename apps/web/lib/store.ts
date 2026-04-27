@@ -49,6 +49,8 @@ function createDefaultData(): AppData {
       monthlyCloseHour: 9,
       autoDraftEnabled: true,
       cronSecret: "change-me-before-hosting",
+      telegramBotToken: "",
+      telegramChatId: "",
       createdAt: now,
       updatedAt: now,
     },
@@ -577,6 +579,8 @@ export async function saveSettings(input: {
   monthlyCloseHour: number;
   autoDraftEnabled: boolean;
   cronSecret: string;
+  telegramBotToken: string;
+  telegramChatId: string;
 }) {
   const data = await readData();
   const parsed = settingsInputSchema.parse(input);
@@ -589,6 +593,8 @@ export async function saveSettings(input: {
     monthlyCloseHour: parsed.monthlyCloseHour,
     autoDraftEnabled: parsed.autoDraftEnabled,
     cronSecret: parsed.cronSecret,
+    telegramBotToken: parsed.telegramBotToken,
+    telegramChatId: parsed.telegramChatId,
     updatedAt: now,
   };
 
@@ -670,5 +676,52 @@ export function formDataToSettingsInput(formData: FormData) {
     monthlyCloseHour: Number(formData.get("monthlyCloseHour") ?? "9"),
     autoDraftEnabled: toBoolean((formData.get("autoDraftEnabled") ?? "false") as FormDataEntryValue),
     cronSecret: String(formData.get("cronSecret") ?? ""),
+    telegramBotToken: String(formData.get("telegramBotToken") ?? ""),
+    telegramChatId: String(formData.get("telegramChatId") ?? ""),
   };
+}
+
+async function sendTelegramMessage(botToken: string, chatId: string, text: string) {
+  const res = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ chat_id: chatId, text }),
+  });
+  if (!res.ok) {
+    throw new Error(`Telegram API error: ${res.status}`);
+  }
+}
+
+export async function checkLongRunningTimers(thresholdHours = 8) {
+  const data = await readData();
+  const settings = data.settings as AppSettings;
+
+  if (!settings.telegramBotToken || !settings.telegramChatId) {
+    return { skipped: true, alerted: 0 };
+  }
+
+  const now = Date.now();
+  const thresholdMs = thresholdHours * 60 * 60 * 1000;
+  let alerted = 0;
+
+  for (const session of data.workSessions) {
+    if (session.endedAt) continue;
+
+    const elapsed = now - new Date(session.startedAt).getTime();
+    if (elapsed < thresholdMs) continue;
+
+    const client = data.clients.find((c) => c.id === session.clientId);
+    const clientName = client?.name ?? "Unknown client";
+    const hours = (elapsed / 1000 / 60 / 60).toFixed(1);
+    const startedAt = new Date(session.startedAt).toLocaleString("en-US", { timeZone: settings.timezone });
+
+    await sendTelegramMessage(
+      settings.telegramBotToken,
+      settings.telegramChatId,
+      `Timer alert: Your timer for "${clientName}" has been running for ${hours} hours (started ${startedAt}). Stop it when you're done.`,
+    );
+    alerted++;
+  }
+
+  return { skipped: false, alerted };
 }

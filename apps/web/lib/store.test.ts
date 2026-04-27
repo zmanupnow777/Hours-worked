@@ -179,6 +179,8 @@ test("runMonthlyAutomation succeeds after cronSecret is updated", async () => {
     monthlyCloseHour: 9,
     autoDraftEnabled: true,
     cronSecret: "a-valid-secret-123",
+    telegramBotToken: "",
+    telegramChatId: "",
   });
   const afterClose = new Date("2026-04-01T10:00:00.000Z");
   const result = await runMonthlyAutomation(afterClose);

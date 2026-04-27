@@ -46,6 +46,14 @@ export default async function SettingsPage() {
               <input id="autoDraftEnabled" name="autoDraftEnabled" type="checkbox" value="true" defaultChecked={settings.autoDraftEnabled} />
             </div>
           </div>
+          <div className="field">
+            <label htmlFor="telegramBotToken">Telegram bot token</label>
+            <input id="telegramBotToken" name="telegramBotToken" defaultValue={settings.telegramBotToken} placeholder="123456:ABC-DEF..." />
+          </div>
+          <div className="field">
+            <label htmlFor="telegramChatId">Telegram chat ID</label>
+            <input id="telegramChatId" name="telegramChatId" defaultValue={settings.telegramChatId} placeholder="Your numeric chat ID" />
+          </div>
           <div className="field field--full button-row">
             <SubmitButton pendingLabel="Saving settings...">Save settings</SubmitButton>
           </div>
