@@ -631,6 +631,15 @@ export async function getCurrentCronSecret() {
   return data.settings.cronSecret;
 }
 
+// Checkbox forms here post the field twice: a hidden "false" so an unchecked box
+// still submits something, then the checkbox itself as "true" when ticked.
+// FormData.get() returns the FIRST entry — always the hidden "false" — so a
+// ticked box reads as false. Always take the LAST entry instead.
+function checkboxValue(formData: FormData, name: string): boolean {
+  const entries = formData.getAll(name);
+  return toBoolean(entries[entries.length - 1] ?? "false");
+}
+
 export function formDataToClientInput(formData: FormData) {
   return {
     id: String(formData.get("id") ?? "") || undefined,
@@ -639,7 +648,7 @@ export function formDataToClientInput(formData: FormData) {
     defaultHourlyRate: Number(formData.get("defaultHourlyRate") ?? "0"),
     currency: String(formData.get("currency") ?? "USD"),
     color: String(formData.get("color") ?? "#db5c33"),
-    active: toBoolean((formData.get("active") ?? "false") as FormDataEntryValue),
+    active: checkboxValue(formData, "active"),
   };
 }
 
@@ -668,7 +677,7 @@ export function formDataToSettingsInput(formData: FormData) {
     timezone: String(formData.get("timezone") ?? ""),
     monthlyCloseDay: Number(formData.get("monthlyCloseDay") ?? "1"),
     monthlyCloseHour: Number(formData.get("monthlyCloseHour") ?? "9"),
-    autoDraftEnabled: toBoolean((formData.get("autoDraftEnabled") ?? "false") as FormDataEntryValue),
+    autoDraftEnabled: checkboxValue(formData, "autoDraftEnabled"),
     cronSecret: String(formData.get("cronSecret") ?? ""),
   };
 }

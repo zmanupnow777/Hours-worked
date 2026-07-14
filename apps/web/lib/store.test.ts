@@ -10,6 +10,7 @@ process.env.HOURS_DATA_FILE = testDataFile;
 import {
   deleteSession,
   finalizeInvoice,
+  formDataToClientInput,
   generateDraftInvoice,
   getAppSnapshot,
   runMonthlyAutomation,
@@ -52,6 +53,29 @@ function manualSession(clientId: string, overrides: Partial<Parameters<typeof sa
     ...overrides,
   });
 }
+
+// The client form posts a hidden active="false" followed by the checkbox's
+// active="true". Reading the first entry instead of the last saves every client
+// as inactive, and the dashboard hides inactive clients — which makes it
+// impossible to start any timer at all.
+test("a checked Active box saves the client as active", () => {
+  const formData = new FormData();
+  formData.append("name", "Checked Client");
+  formData.append("defaultHourlyRate", "0");
+  formData.append("active", "false"); // hidden fallback
+  formData.append("active", "true"); // the checked checkbox
+
+  assert.equal(formDataToClientInput(formData).active, true);
+});
+
+test("an unchecked Active box saves the client as inactive", () => {
+  const formData = new FormData();
+  formData.append("name", "Unchecked Client");
+  formData.append("defaultHourlyRate", "0");
+  formData.append("active", "false"); // hidden fallback only
+
+  assert.equal(formDataToClientInput(formData).active, false);
+});
 
 test("fresh data file starts with no seeded clients", async () => {
   await resetData();
